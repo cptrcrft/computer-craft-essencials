@@ -1,0 +1,159 @@
+--   Block actions combinators v1 (go)
+--
+-- f b u d l r   -- Move forward, backward, up, down, turn left, turn right
+-- F B U D       -- same moves, but move until block detected
+-- m M   --  mine block, mine blocks while block present (usefull for gravel mining)
+-- [commands lastcommand]   --  loop while lastcommand returns success
+-- commandNUMBER   -- loop command NUMBER times
+-- [commands]NUMBER -- loop commands list NUMBER times
+-- >DIGIT   --   place block from DIGIT slot. When DIGIT == 0, place first available
+-- ^DIGIT   --   place block up
+-- _DIGIT   --   place block down
+-- {shell expression}
+
+local tArgs = { ... }
+if #tArgs ~= 1 then
+  print("Usage: go <list of commands>")
+  return
+end
+
+-- CAPS-letter commands evaluator, move-only
+-- Remove code duplication by encapsulating common pattern in function
+local function mdMove(command, detector)
+  while detector() == false do
+    command()
+  end
+end
+
+-- CAPS-letter commands evaluator, dig-only
+-- Remove code duplication by encapsulating common pattern in function
+local function mdDig(command, detector)
+  while detector() do
+    command()
+    sleep(0.4)
+  end
+end
+
+-- Evaluate prefix commands
+local function runPrefixCmd(ch, digCmd, detectCmd, placeCmd)
+  local chCode = string.byte(ch, 1) - 48 
+  if false then
+  elseif ch == 'm' then return true, digCmd()
+  elseif ch == 'M' then mdDig(digCmd, detectCmd); return true, false -- todo: better result return
+  elseif ch == '0' then return true, placeCmd()
+  elseif chCode > 0 and chCode < 10 then
+    turtle.select(chCode)
+    res = placeCmd()
+    return true, res
+  end
+  return false, false
+end
+
+-- Lua specific array length
+local function lngth(lst)
+  if lst == nil then return 0 else return #lst end
+end
+
+local function parseNumber(st)
+  _, _, num, rest = string.find(st, "^(%d+)(.*)$")
+  return num, lngth(st) - lngth(rest)
+end
+
+local function parseLoop(st)
+  _, _, loop, rest = string.find(st, "^(%b[])(.*)$")
+  if loop ~= nil and loop ~= '' then
+    return loop:sub(2,-2), lngth(st) - lngth(rest)
+  elseif st:sub(1,1) == '[' then return nil, 1
+  else return nil, 0
+  end
+end
+
+
+local function shell(command, i)
+local ch = command:sub(i, #command - i)
+local _, _, cmd, rest = string.find(ch, "([^}]*)}(.*)")
+shell.run(cmd)
+go(rest)
+end
+
+
+
+function go(command)
+  local i = 1
+  local prevCommand = ''
+  local result = false
+  
+  while i <= #command do
+    local ch = command:sub(i, i)
+    local nextCh = i == #command and '' or command:sub(i+1, i+1)
+    
+    local number, nLen = parseNumber(command:sub(i))
+    local loop, lLen   = parseLoop(command:sub(i))
+    
+    -- if we found number, repeat last command number times
+    if number ~= nil then
+      number = tonumber(number)
+      while number > 1 do
+        go(prevCommand)
+        number = number - 1
+      end
+      i = i + nLen - 1
+    -- if we found loop, parse possible number and evaluate expression
+    elseif loop ~= nil then
+      local number, nLen = parseNumber(command:sub(i + lLen))
+      if number ~= nil then
+        number = tonumber(number)
+        while number > 0 do
+          go(loop)
+          number = number - 1
+        end
+        i = i + nLen
+      else
+        while go(loop) do end
+      end
+      i = i + lLen - 1
+      
+    elseif ch == 'f' then result = turtle.forward()
+    elseif ch == 'b' then result = turtle.back()
+    elseif ch == 'u' then result = turtle.up()
+    elseif ch == 'd' then result = turtle.down()
+    
+    elseif ch == 'F' then mdMove(turtle.forward, turtle.detect)
+    elseif ch == 'B' then go("aFa") -- this is not primitive
+    elseif ch == 'U' then mdMove(turtle.up, turtle.detectUp)
+    elseif ch == 'D' then mdMove(turtle.down, turtle.detectDown)
+    
+    elseif ch == 'l' then turtle.turnLeft()
+    elseif ch == 'r' then turtle.turnRight()
+    elseif ch == 'a' then go("ll")
+    elseif ch == '{' then 
+    elseif ch == 'm' then result = turtle.dig()
+    elseif ch == 'M' then mdDig(turtle.dig, turtle.detect)
+
+    elseif ch == '>' then 
+      local result1,result2 = runPrefixCmd(nextCh, turtle.dig, turtle.detect, turtle.place)
+      if result1 then
+        i = i + 1 -- todo: better prefix parsing
+      end
+      result = result2
+    elseif ch == '^' then 
+      local result1,result2 = runPrefixCmd(nextCh, turtle.digUp, turtle.detectUp, turtle.placeUp)
+      if result1 then
+        i = i + 1
+      end
+      result = result2
+    elseif ch == '_' then 
+      local result1,result2 = runPrefixCmd(nextCh, turtle.digDown, turtle.detectDown, turtle.placeDown)
+      if result1 then
+        i = i + 1
+      end
+      result = result2
+    end
+    
+    prevCommand = ch
+    i = i + 1
+  end
+  return result
+end
+
+go(tArgs[1])
