@@ -164,9 +164,10 @@ else
 	local u = tArgs[1]
 	local r = tArgs[2]
 	if ( u == nil) then
-	u='cptrcrft'
+	   u='cptrcrft'
 	end
 	if (r == nil) then
-	r='computer-craft-essencials'
+	   r='computer-craft-essencials'
+	end
         parseInput( u, r, tArgs[3], tArgs[4], tArgs[5] )
 end

@@ -1,7 +1,8 @@
 args={...}
 
 dirs = {'var', 'bin', 'etc'}
-PWD=/disk/
+PWD='/disk/computer-craft-essecials/'
 for a = 1,#dirs,1 do
-shell.run(cp PWD .. dirs[a], '..')
+shell.run('rm', '/' .. dirs[a])
+shell.run('cp', PWD .. dirs[a], '/')
 end
