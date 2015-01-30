@@ -1,0 +1,9 @@
+os.loadAPI('pr')
+pr.update()
+f = pr.get('bottom')
+p = pr.getParts()
+ 
+for k,v in pairs(p)
+do
+  print(k, v)
+end

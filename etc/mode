@@ -1,0 +1,36 @@
+
+advanced=nil
+wireless=nil
+-- if turtle
+---turtle type---
+crafty=nil
+eng=nil
+sensor=nil
+pos=nil
+tool=nil
+felling=nil
+magnet=nil
+
+
+---turtle kind ---
+-- queen          -- advanced wireless crafty turtle
+-- router         -- wireless                             route(id, dst, msg)
+-- DRONE          -- wireless/tool			  
+-- magnet         -- magnet wireless
+-- radar          -- advanced sensor wireless
+-- pet            -- folow player
+-- zergling       -- advanced sensor calibrated mele
+-- soldier        -- advanced wireless  
+-- builder\miner  -- advanced calibrated mining turtle 
+-- rednet placer  -- advanced wireless mining turtle
+
+
+
+---computer kind
+
+-- controler --
+-- router --
+-- radar --
+-- me manager --
+-- if computer
+wired=nil

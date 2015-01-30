@@ -1,0 +1,25 @@
+ptable = {}
+itable = {}
+vtable = {}
+ 
+function load(directory)
+end
+ 
+function update()
+ptable = peripheral.getNames()
+for k,v in pairs(ptable)
+do
+print(k, " ",v)
+itable[v] = peripheral.wrap(v)
+vtable[v] = k
+end
+ 
+end
+ 
+function get(v)
+return itable[v]
+end
+ 
+function help(k)
+shell.run("docp", k)
+end
