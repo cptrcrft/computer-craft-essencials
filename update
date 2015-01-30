@@ -1,7 +1,5 @@
 args={...} 
-dirs = {'var', 'bin', 'etc'}
-PWD='/disk/computer-craft-essecials/'
-for a = 1,#dirs,1 do
-shell.run('rm', '/' .. dirs[a])
-shell.run('cp', PWD .. dirs[a], '/')
-end
+shell.run('/bin/git', '. .')
+PWD='/disk/cce/'
+shell.run('rm', PWD)
+shell.run('mv', '/downloads/computer-craft-essencials/', PWD)
